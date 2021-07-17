@@ -1,4 +1,5 @@
 import random
+from typing import Tuple
 
 pop_size = 50
 crossover_rate = 1
@@ -31,6 +32,18 @@ def fitness_function(genome, items, weight_limit):
             if weight > weight_limit:
                 return 0
     return value
+
+# def select_pair(population, fitness_func):
+
+
+def crossover(genome1, genome2):
+
+    point = random.randint(1,genome1.size)
+    p1, p2 = list(genome1), list(genome2)  # convert str to list
+    for i in range(point, len(p1)):
+        p1[i] = p2[i]
+        p2[i] = p1[i]
+    return p1, p2
 
 
 def generate_genome():
