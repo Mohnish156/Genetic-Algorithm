@@ -1,9 +1,10 @@
 import random
-from typing import Tuple
+from typing import Tuple, List, Callable
 
 pop_size = 50
 crossover_rate = 1
 mutation_rate = 0.2
+Genome = List[int]
 
 
 def main():
@@ -33,17 +34,31 @@ def fitness_function(genome, items, weight_limit):
                 return 0
     return value
 
-# def select_pair(population, fitness_func):
+
+def select_pair(population, fitness_func):
+    return random.choices(
+        population=population,
+        weights=[fitness_func(genome) for genome in population],
+        k=2
+    )
+
+
+def mutation(genome: Genome, num: int = 1, probability: float = mutation_rate) -> Genome:
+    for i in range(num):
+        index = random.randrange(len(genome))
+        genome[index] = genome[index] \
+            if random() > probability \
+            else abs(genome[index] - 1)
+    return genome
 
 
 def crossover(genome1, genome2):
+    point = random.randint(1, genome1.size)
 
-    point = random.randint(1,genome1.size)
-    p1, p2 = list(genome1), list(genome2)  # convert str to list
-    for i in range(point, len(p1)):
-        p1[i] = p2[i]
-        p2[i] = p1[i]
-    return p1, p2
+    for i in range(point, len(genome1)):
+        genome1[i] = genome2[i]
+        genome2[i] = genome1[i]
+    return genome1, genome2
 
 
 def generate_genome():
