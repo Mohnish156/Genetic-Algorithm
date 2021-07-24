@@ -1,70 +1,100 @@
-import random
-from typing import Tuple, List, Callable
+from random import random, randint, randrange, uniform
+import numpy.random as npr
 
-pop_size = 50
+pop_size = 5
 crossover_rate = 1
 mutation_rate = 0.2
-Genome = List[int]
+alpha = 2
+elite = 0.05
+generations = 100
+
+all_items = list()
+
+capacity = 269
+
+
+class Item:
+    def __init__(self, weight, value):
+        self.weight = weight
+        self.value = value
 
 
 def main():
+    create_data_struct()
     genetic_algorithm()
 
 
 def genetic_algorithm():
-    genome = generate_genome()
-    best_sol = None
-    stopping_criteria = 1
-    while stopping_criteria < 100:
-        new_pop = list
-        full = False
-        # while not full:
+    return 0
 
 
-def fitness_function(genome, items, weight_limit):
-    value = 0
+def create_data_struct():
+    lines = list()
+    file = open("10_269", "r")
+    for line in file:
+        lines.append(line)
+
+    del lines[0]
+    for pair in lines:
+        x = pair.split()
+        I1 = Item(x[0], x[1])
+        all_items.append(I1)
+
+
+def roulette_wheel_selection(genome):
+    max_val = sum(fitness_function(chromosome) for chromosome in genome)
+    pick = uniform(0, max_val)
+    current = 0
+    for chromosome in genome:
+        current += chromosome.fitness
+        if current > pick:
+            return chromosome
+
+
+def calculate_weight(chromosome):
     weight = 0
-
-    for i in range(items.size):
-        if genome[i] == 1:
-            weight += items[i].weight
-            value += items[i].value
-
-            if weight > weight_limit:
-                return 0
-    return value
+    for bit in chromosome:
+        if bit == 1:
+            weight += int(all_items[bit].weight)
+    return weight
 
 
-def select_pair(population, fitness_func):
-    return random.choices(
-        population=population,
-        weights=[fitness_func(genome) for genome in population],
-        k=2
-    )
+def calculate_value(chromosome):
+    weight = 0
+    for bit in chromosome:
+        if bit == 1:
+            weight += int(all_items[bit].value)
+    return weight
 
 
-def mutation(genome: Genome, num: int = 1, probability: float = mutation_rate) -> Genome:
-    for i in range(num):
-        index = random.randrange(len(genome))
-        genome[index] = genome[index] \
-            if random() > probability \
-            else abs(genome[index] - 1)
-    return genome
+def fitness_function(chromosome):
+    fitness = calculate_value(chromosome) - (alpha * max(0, calculate_weight(chromosome) - capacity))
+    return fitness
 
 
-def crossover(genome1, genome2):
-    point = random.randint(1, genome1.size)
+def mutation(chromosome, num: int = 1, probability: float = mutation_rate):
+    for x in range(num):
+        index = random.randrange(len(chromosome))
+        chromosome[index] = chromosome[index] if random() > probability else abs(chromosome[index] - 1)
+    return chromosome
 
-    for i in range(point, len(genome1)):
-        genome1[i] = genome2[i]
-        genome2[i] = genome1[i]
-    return genome1, genome2
+
+def crossover(chromosome_1, chromosome_2):
+    point = random.randint(1, chromosome_1.size)
+
+    for i in range(point, len(chromosome_1)):
+        chromosome_1[i] = chromosome_2[i]
+        chromosome_2[i] = chromosome_1[i]
+    return chromosome_1, chromosome_2
 
 
 def generate_genome():
     genome = list()
     for i in range(pop_size):
-        genome.append(random.randint(0, 1))
+        chromosome = list()
+        for x in range(len(all_items)):
+            chromosome.append(randint(0, 1))
+        genome.append(chromosome.copy())
 
     return genome
 
