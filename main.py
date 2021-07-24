@@ -5,7 +5,7 @@ pop_size = 5
 crossover_rate = 1
 mutation_rate = 0.2
 alpha = 2
-elite = 0.05
+elite_percent = 0.2
 generations = 100
 
 all_items = list()
@@ -25,7 +25,29 @@ def main():
 
 
 def genetic_algorithm():
-    return 0
+    genome = generate_genome()
+    best_chromosome = None
+    i = 0
+    while i < generations:
+        ordered = genome.copy()
+        for chromosome in range(len(ordered) - 1):
+            if fitness_function(ordered[chromosome]) > fitness_function(ordered[chromosome + 1]):
+                ordered[chromosome], ordered[chromosome + 1] = ordered[chromosome + 1], ordered[chromosome]
+        best_chromosome = ordered[0].copy()
+        new_genome = list()
+        elites = round(elite_percent * len(ordered))
+        for new_chromosomes in range(elites):
+            new_genome.append(ordered[new_chromosomes])
+
+        for x in range(pop_size - len(new_genome)):
+            p1 = roulette_wheel_selection(new_genome)
+            p2 = roulette_wheel_selection(new_genome)
+            children = crossover(p1, p2)
+
+            new_genome.append(mutation(children[0], 1, mutation_rate))
+            new_genome.append(mutation(children[1], 1, mutation_rate))
+
+    return best_chromosome
 
 
 def create_data_struct():
