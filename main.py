@@ -1,13 +1,14 @@
+import sys
 from random import random, randint, randrange, uniform
 import numpy.random as npr
 from typing import List
 
-pop_size = 50
+pop_size = 10
 crossover_rate = 1
 mutation_rate = 0.2
-alpha = 2
+alpha = 5
 elite_percent = 0.2
-generations = 100
+generations = 10
 
 all_items = list()
 
@@ -15,42 +16,38 @@ capacity = 269
 
 
 class Item:
-    def __init__(self, weight, value):
-        self.weight = weight
+    def __init__(self, value, weight):
         self.value = value
-
+        self.weight = weight
 
 def main():
     create_data_struct()
     genetic_algorithm()
 
-
 def genetic_algorithm():
     genome = generate_genome()
-    best_chromosome = None
-    i = 0
-    ordered = genome.copy()
-    while i < generations:
+    best_chromosome = []
+    for generation in range(generations):
 
-        for chromosome in range(len(ordered) - 1):
-            if fitness_function(ordered[chromosome]) > fitness_function(ordered[chromosome + 1]):
-                ordered[chromosome], ordered[chromosome + 1] = ordered[chromosome + 1], ordered[chromosome]
-        best_chromosome = ordered[0]
-        print(calculate_value(best_chromosome))
-        new_genome = list()
-        # implement elites
-        new_genome.append(ordered[0].copy())
-        new_genome.append(ordered[1].copy())
+        for chromosome in genome:
+            if fitness_function(chromosome) > fitness_function(best_chromosome):
+                best_chromosome = chromosome.copy()
 
+        print("current generation: " + str(generation) + "\tbest: " + str(calculate_value(best_chromosome)))
+        ye = calculate_value(best_chromosome)
+        genome.sort(key=lambda chromo: fitness_function(chromo), reverse=True)
+        new_genome = [] #need to implement elitism
+        new_genome.append(genome[0])
+        new_genome.append(genome[1])
         while len(new_genome) <= pop_size:
-            p1 = roulette_wheel_selection(new_genome)
-            p2 = roulette_wheel_selection(new_genome)
-            children = crossover(p1, p2)
+            p1 = roulette_wheel_selection(genome)
+            p2 = roulette_wheel_selection(genome)
+            children1, children2 = crossover(p1, p2)
 
-            new_genome.append(mutation(children[0], 1, mutation_rate).copy())
-            new_genome.append(mutation(children[1], 1, mutation_rate).copy())
-        ordered = new_genome.copy()
-        i += 1
+            new_genome.append(mutation(children1, 1, mutation_rate))
+            new_genome.append(mutation(children2, 1, mutation_rate))
+        genome = new_genome
+
     return print(calculate_value(best_chromosome))
 
 
@@ -69,7 +66,7 @@ def create_data_struct():
 
 def roulette_wheel_selection(genome):
     max_val = sum(fitness_function(chromosome) for chromosome in genome)
-    pick = uniform(0, max_val)
+    pick = uniform(0, (max_val-sys.float_info.min))
     current = 0
     for chromosome in genome:
         current += fitness_function(chromosome)
@@ -98,7 +95,7 @@ def calculate_value(chromosome):
 
 
 def fitness_function(chromosome):
-    fitness = calculate_value(chromosome) - (alpha * max(0, calculate_weight(chromosome) - capacity))
+    fitness = calculate_value(chromosome) - (alpha * max(0, (calculate_weight(chromosome) - capacity)))
     return fitness
 
 
