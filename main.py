@@ -1,18 +1,16 @@
-import sys
+import math
 from random import random, randint, randrange, uniform
-import numpy.random as npr
-from typing import List
 
-pop_size = 100
+pop_size = 50
 crossover_rate = 1
 mutation_rate = 0.2
-alpha = 2
-elite_percent = 0.2
-generations = 10
+alpha = 4
+elite_percent = 0.05
+generations = 200
 
 all_items = list()
 
-capacity = 269
+capacity = 0
 
 
 class Item:
@@ -36,11 +34,14 @@ def genetic_algorithm():
                 best_chromosome = chromosome.copy()
 
         print("current generation: " + str(generation) + "\tbest: " + str(calculate_value(best_chromosome)))
-        ye = calculate_value(best_chromosome)
+
         genome.sort(key=lambda chromo: fitness_function(chromo), reverse=True)
-        new_genome = []  # need to implement elitism
-        new_genome.append(genome[0])
-        new_genome.append(genome[1])
+
+        new_genome = []
+        top_chromosomes = math.ceil(elite_percent * len(genome))
+
+        for top in range(top_chromosomes):
+            new_genome.append(genome[top])
         while len(new_genome) <= pop_size:
             p1 = list(roulette_wheel_selection(genome))
             p2 = list(roulette_wheel_selection(genome))
@@ -56,10 +57,15 @@ def genetic_algorithm():
 
 def create_data_struct():
     lines = list()
-    file = open("10_269", "r")
+    file = open("23_10000", "r")
     for line in file:
         lines.append(line)
 
+    first_line = lines[0].split()
+    global capacity
+    capacity = int(first_line[1])
+
+    del lines[0]
     del lines[0]
     for pair in lines:
         x = pair.split()
@@ -69,11 +75,11 @@ def create_data_struct():
 
 def roulette_wheel_selection(genome):
     max_val = sum(fitness_function(chromosome) for chromosome in genome)
-    pick = uniform(0, (max_val - sys.float_info.min))
+    chosen = uniform(0, max_val)
     current = 0
     for chromosome in genome:
         current += fitness_function(chromosome)
-        if current > pick:
+        if current > chosen:
             return chromosome
 
 
@@ -110,9 +116,10 @@ def mutation(chromosome, num: int = 1, probability: float = mutation_rate):
 
 
 def crossover(chromosome_1, chromosome_2):
-    point = randint(1, len(chromosome_1))
+    length = len(chromosome_1)
+    point = randint(1, length)
 
-    for i in range(point, len(chromosome_1)):
+    for i in range(point, length):
         chromosome_1[i] = chromosome_2[i]
         chromosome_2[i] = chromosome_1[i]
     return chromosome_1, chromosome_2
