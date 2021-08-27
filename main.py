@@ -1,16 +1,19 @@
 import math
 from random import random, randint, randrange, uniform
+import numpy as np
+import matplotlib.pyplot as plt
 
-pop_size = 50
+pop_size = 20
 crossover_rate = 1
-mutation_rate = 0.2
+mutation_rate = 0.3
 alpha = 4
 elite_percent = 0.05
-generations = 200
+generations = 100
 
 all_items = list()
 
 capacity = 0
+avg = []
 
 
 class Item:
@@ -21,10 +24,30 @@ class Item:
 
 def main():
     create_data_struct()
-    genetic_algorithm()
+    Sum = 0
+    values = []
+
+
+
+    for x in range(5):
+        values.append(genetic_algorithm())
+    Sum = sum(values)
+    print("Mean: ", Sum / 5)
+    print("Standard Deviation, ", np.std(values))
+
+    print(len(avg))
+
+    gens = []
+    for x in range(generations):
+        gens.append(x)
+    plt.plot(gens, avg[0])
+    plt.xlabel("Generations")
+    plt.ylabel("Average fitness of the 5 best solutions in the population")
+    plt.savefig("10_269_converge.png")
 
 
 def genetic_algorithm():
+    current_avg = []
     genome = generate_genome()
     best_chromosome = []
     for generation in range(generations):
@@ -33,7 +56,7 @@ def genetic_algorithm():
             if fitness_function(chromosome) > fitness_function(best_chromosome):
                 best_chromosome = chromosome.copy()
 
-        print("current generation: " + str(generation) + "\tbest: " + str(calculate_value(best_chromosome)))
+        # print("current generation: " + str(generation) + "\tbest: " + str(calculate_value(best_chromosome)))
 
         genome.sort(key=lambda chromo: fitness_function(chromo), reverse=True)
 
@@ -50,14 +73,22 @@ def genetic_algorithm():
 
             new_genome.append(mutation(children1, 1, mutation_rate))
             new_genome.append(mutation(children2, 1, mutation_rate))
+
+        best_5 = []
+        for x in range(5):
+            best_5.append(calculate_value(genome[x]))
+
+        mean = sum(best_5) / 5
+        current_avg.append(mean)
         genome = new_genome
 
-    return print(calculate_value(best_chromosome))
+    avg.append(current_avg)
+    return calculate_value(best_chromosome)
 
 
 def create_data_struct():
     lines = list()
-    file = open("23_10000", "r")
+    file = open("10_269", "r")
     for line in file:
         lines.append(line)
 
